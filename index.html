@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feature Voting</title>
+  <style>
+    body { font-family: sans-serif; background: #f2f2f2; padding: 30px; }
+    form { background: #fff; max-width: 600px; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1 { text-align: center; }
+    label { display: block; margin-top: 20px; font-weight: bold; }
+    .desc { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+    input[type="text"] { width: 100%; padding: 8px; margin-top: 10px; }
+    button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Vote for the Next Feature</h1>
+  <form id="voteForm">
+    <label><input type="radio" name="feature" value="Location Timer" required /> Location Timer</label>
+    <div class="desc">Set a radius at a location. Timer starts/stops when entering/leaving.</div>
+
+    <label><input type="radio" name="feature" value="Script Engine" /> Script Engine</label>
+    <div class="desc">Custom scripting engine for personalized automation.</div>
+
+    <label>Your own idea (optional):</label>
+    <input type="text" id="customIdea" placeholder="Write your idea here..." />
+
+    <button type="submit">Submit Vote</button>
+  </form>
+
+  <script>
+    document.getElementById("voteForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const feature = document.querySelector('input[name="feature"]:checked').value;
+      const idea = document.getElementById("customIdea").value;
+      const data = {
+        feature: feature,
+        idea: idea,
+        timestamp: new Date().toISOString()
+      };
+
+      const filename = `votes/vote-${Date.now()}.json`;
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+
+      const res = await fetch("https://api.github.com/repos/swisscuber6/Time-Tracking-Voting/contents/" + filename, {
+        method: "PUT",
+        headers: {
+          Authorization: "Bearer GITHUB_TOKEN", // Wird durch GitHub Action ersetzt (Frontend hier nur Vorschau)
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "New vote submitted",
+          content: content
+        })
+      });
+
+      if (res.ok) {
+        alert("Thanks for your vote!");
+        e.target.reset();
+      } else {
+        alert("There was a problem submitting your vote.");
+      }
+    });
+  </script>
+</body>
+</html>
